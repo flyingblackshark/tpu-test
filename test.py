@@ -1,19 +1,18 @@
-from jax.sharding import Mesh, PartitionSpec, NamedSharding
+from jax.sharding import Mesh
+from jax.sharding import PartitionSpec as P
 from jax.lax import with_sharding_constraint
-from jax.experimental import mesh_utils
 from flax import nnx
 import jax
 import jax.numpy as jnp
 from functools import partial
+import numpy as np
+jax.distributed.initialize()
 # Create a mesh and annotate each axis with a name.
-device_mesh = mesh_utils.create_device_mesh((4, 4))
-#print(device_mesh)
+mesh_rows = 2
+mesh_cols =  jax.device_count() // 2
+mesh = Mesh(np.array(jax.devices()).reshape(mesh_rows, mesh_cols), ('x', 'y'))
+sharding = jax.sharding.NamedSharding(mesh, P('x', 'y'))
 
-mesh = Mesh(devices=device_mesh, axis_names=('data', 'model'))
-#print(mesh)
-
-def mesh_sharding(pspec: PartitionSpec) -> NamedSharding:
-  return NamedSharding(mesh, pspec)
 
 class Linear(nnx.Module):
   def __init__(self, din: int, dout: int, *, rngs: nnx.Rngs):
@@ -48,10 +47,12 @@ def forward(x, model: MLP):
   return x, None
 
 x = jnp.ones((16, 64))
-x_sharding = mesh_sharding(PartitionSpec('data', None)) # dimensions: (batch, length)
-x = jax.device_put(x, x_sharding)
-jax.debug.visualize_array_sharding(x)
-y, _ = forward(x, model)
+global_shape = (16,64)
+arrays = [jax.device_put(x[index], d)
+       for d, index in sharding.addressable_devices_indices_map(global_shape).items()]
+
+
+y, _ = forward(arrays, model)
 
 print(f'{y.shape = }')
 nnx.display(model)
