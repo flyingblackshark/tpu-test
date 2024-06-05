@@ -51,8 +51,8 @@ global_shape = (16,64)
 arrays = [jax.device_put(x[index], d)
        for d, index in sharding.addressable_devices_indices_map(global_shape).items()]
 
-
-y, _ = forward(arrays, model)
+arr = jax.make_array_from_single_device_arrays(global_shape, sharding, arrays)
+y, _ = forward(arr, model)
 
 print(f'{y.shape = }')
 nnx.display(model)
