@@ -38,7 +38,7 @@ class MLP(nnx.Module):
   
 @partial(nnx.vmap, axis_size=5)
 def create_model(rngs: nnx.Rngs):
-  return MLP(10, 32, 10, rngs=rngs)
+  return MLP(64, 256, 64, rngs=rngs)
 
 model = create_model(nnx.Rngs(0))
 
@@ -47,7 +47,7 @@ def forward(x, model: MLP):
   x = model(x)
   return x, None
 
-x = jnp.ones((3, 10))
+x = jnp.ones((16, 64))
 x_sharding = mesh_sharding(PartitionSpec('data', None)) # dimensions: (batch, length)
 x = jax.device_put(x, x_sharding)
 jax.debug.visualize_array_sharding(x)
