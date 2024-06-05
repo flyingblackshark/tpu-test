@@ -1,7 +1,9 @@
 from jax.sharding import Mesh, PartitionSpec, NamedSharding
 from jax.lax import with_sharding_constraint
 from jax.experimental import mesh_utils
-
+from flax.experimental import nnx
+import jax
+import jax.numpy as jnp
 # Create a mesh and annotate each axis with a name.
 device_mesh = mesh_utils.create_device_mesh((4, 4))
 print(device_mesh)
@@ -11,3 +13,30 @@ print(mesh)
 
 def mesh_sharding(pspec: PartitionSpec) -> NamedSharding:
   return NamedSharding(mesh, pspec)
+  
+class Linear(nnx.Module):
+  def __init__(self, din: int, dout: int, *, rngs: nnx.Rngs):
+    key = rngs.params()
+    self.w = nnx.Param(jax.random.uniform(key, (din, dout)))
+    self.b = nnx.Param(jnp.zeros((dout,)))
+    self.din, self.dout = din, dout
+
+  def __call__(self, x: jax.Array):
+    return x @ self.w + self.b
+
+class MLP(nnx.Module):
+  def __init__(self, din: int, dmid: int, dout: int, *, rngs: nnx.Rngs):
+    self.linear1 = Linear(din, dmid, rngs=rngs)
+    self.dropout = nnx.Dropout(rate=0.1, rngs=rngs)
+    self.bn = nnx.BatchNorm(dmid, rngs=rngs)
+    self.linear2 = Linear(dmid, dout, rngs=rngs)
+
+  def __call__(self, x: jax.Array):
+    x = nnx.gelu(self.dropout(self.bn(self.linear1(x))))
+    return self.linear2(x)
+  
+model = MLP(2, 16, 5, rngs=nnx.Rngs(0))
+
+y = model(x=jnp.ones((3, 2)))
+
+nnx.display(model)
