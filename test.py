@@ -1,9 +1,10 @@
 from jax.sharding import Mesh, PartitionSpec, NamedSharding
 from jax.lax import with_sharding_constraint
 from jax.experimental import mesh_utils
-from flax.experimental import nnx
+from flax import nnx
 import jax
 import jax.numpy as jnp
+from functools import partial
 # Create a mesh and annotate each axis with a name.
 device_mesh = mesh_utils.create_device_mesh((4, 4))
 print(device_mesh)
@@ -13,7 +14,7 @@ print(mesh)
 
 def mesh_sharding(pspec: PartitionSpec) -> NamedSharding:
   return NamedSharding(mesh, pspec)
-  
+
 class Linear(nnx.Module):
   def __init__(self, din: int, dout: int, *, rngs: nnx.Rngs):
     key = rngs.params()
@@ -35,8 +36,19 @@ class MLP(nnx.Module):
     x = nnx.gelu(self.dropout(self.bn(self.linear1(x))))
     return self.linear2(x)
   
-model = MLP(2, 16, 5, rngs=nnx.Rngs(0))
+@partial(nnx.vmap, axis_size=5)
+def create_model(rngs: nnx.Rngs):
+  return MLP(10, 32, 10, rngs=rngs)
+  
+model = create_model(nnx.Rngs(0))
 
-y = model(x=jnp.ones((3, 2)))
+@nnx.scan
+def forward(x, model: MLP):
+  x = model(x)
+  return x, None
 
+x = jnp.ones((3, 10))
+y, _ = forward(x, model)
+
+print(f'{y.shape = }')
 nnx.display(model)
