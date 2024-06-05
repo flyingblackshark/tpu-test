@@ -7,10 +7,10 @@ import jax.numpy as jnp
 from functools import partial
 # Create a mesh and annotate each axis with a name.
 device_mesh = mesh_utils.create_device_mesh((4, 4))
-print(device_mesh)
+#print(device_mesh)
 
 mesh = Mesh(devices=device_mesh, axis_names=('data', 'model'))
-print(mesh)
+#print(mesh)
 
 def mesh_sharding(pspec: PartitionSpec) -> NamedSharding:
   return NamedSharding(mesh, pspec)
@@ -39,7 +39,7 @@ class MLP(nnx.Module):
 @partial(nnx.vmap, axis_size=5)
 def create_model(rngs: nnx.Rngs):
   return MLP(10, 32, 10, rngs=rngs)
-  
+
 model = create_model(nnx.Rngs(0))
 
 @nnx.scan
@@ -48,6 +48,9 @@ def forward(x, model: MLP):
   return x, None
 
 x = jnp.ones((3, 10))
+x_sharding = mesh_sharding(PartitionSpec('data', None)) # dimensions: (batch, length)
+x = jax.device_put(x, x_sharding)
+jax.debug.visualize_array_sharding(x)
 y, _ = forward(x, model)
 
 print(f'{y.shape = }')
