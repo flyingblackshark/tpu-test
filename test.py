@@ -3,6 +3,7 @@ import jax.numpy as jnp
 from jax.sharding import Mesh, PartitionSpec, NamedSharding
 from jax.experimental import mesh_utils,multihost_utils
 import numpy as np
+from jax.debug import visualize_array_sharding
 jax.distributed.initialize()
 
 
@@ -15,4 +16,4 @@ if jax.process_index() == 0:
 
 arr = multihost_utils.host_local_array_to_global_array(test, mesh, pspecs)  
 
-print(arr)
+visualize_array_sharding(arr)
