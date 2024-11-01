@@ -7,8 +7,8 @@ shape = (16,4)
 
 # 定义 sharding 策略（例如在 2 个设备上分配）
 device_mesh = mesh_utils.create_device_mesh((16,))
-mesh = Mesh(devices=device_mesh, axis_names=('data'))
-x_sharding = NamedSharding(mesh,PartitionSpec('data'))
+#mesh = Mesh(devices=jax.devices(), axis_names=('data'))
+x_sharding = NamedSharding(device_mesh,PartitionSpec('data'))
 
 # 假设两个设备上各自持有 4x2 的数据
 arrays = [jnp.ones((4,4)),jnp.ones((4,4)),jnp.ones((4,4)),jnp.ones((4,4))]
