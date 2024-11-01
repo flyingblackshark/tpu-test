@@ -12,8 +12,8 @@ mesh = Mesh(device_mesh, axis_names=('data'))
 x_sharding = NamedSharding(mesh,PartitionSpec('data'))
 
 arrays = [
-    jax.device_put(jnp.ones((4, 4)), jax.devices()[0]),
-    jax.device_put(jnp.zeros((4, 4)), jax.devices()[1])
+    jnp.ones((4, 4)),
+    jnp.zeros((4, 4))
 ]
 
 # 使用 make_array_from_single_device_arrays 来构造跨设备数组
