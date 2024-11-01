@@ -13,11 +13,9 @@ if jax.process_index() == 0:
     test = jnp.ones((4))
 else:
     test = jnp.zeros((4))
-# with mesh:
-#     arr = multihost_utils.host_local_array_to_global_array(test, mesh, pspecs)  
 arr = multihost_utils.broadcast_one_to_all(test)
-#print(arr)
-#visualize_array_sharding(arr)
+arr = jnp.asarray(arr)
+visualize_array_sharding(arr)
 print(jax.process_index())
 print(arr is None)
 print(arr)
