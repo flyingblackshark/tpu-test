@@ -8,7 +8,8 @@ jax.distributed.initialize()
 
 
 # 定义 sharding 策略（例如在 2 个设备上分配）
-mesh = jax.sharding.Mesh(np.array(jax.devices()).reshape(jax.process_count(), jax.local_device_count()), ['host', 'dev'])
+device_mesh = mesh_utils.create_device_mesh((4,))
+mesh = jax.sharding.Mesh(device_mesh, ['host', 'dev'])
 pspecs = jax.sharding.PartitionSpec('host')
 test = None
 if jax.process_index() == 0:
