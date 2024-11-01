@@ -9,10 +9,11 @@ shape = (8,4)
 device_mesh = mesh_utils.create_device_mesh((8,))
 mesh = Mesh(device_mesh, axis_names=('data'))
 x_sharding = NamedSharding(mesh,PartitionSpec('data'))
-arrays = None
-if jax.process_index() == 0:
-# 假设两个设备上各自持有 4x2 的数据
-    arrays = [jnp.ones((4,4)),jnp.ones((4,4))]
+
+arrays = [
+    jax.device_put(jnp.ones((4, 4)), jax.devices[0]),
+    jax.device_put(jnp.zeros((4, 4)), jax.devices[1])
+]
 
 # 使用 make_array_from_single_device_arrays 来构造跨设备数组
 distributed_array = jax.make_array_from_single_device_arrays(shape, x_sharding, arrays)
