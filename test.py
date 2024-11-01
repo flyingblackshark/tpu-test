@@ -11,8 +11,8 @@ pspecs = jax.sharding.PartitionSpec('host')
 test = None
 if jax.process_index() == 0:
     test = np.arange(4)
-
-arr = multihost_utils.host_local_array_to_global_array(test, mesh, pspecs)  
+with mesh:
+    arr = multihost_utils.host_local_array_to_global_array(test, mesh, pspecs)  
 
 visualize_array_sharding(arr)
 print(jax.process_index())
