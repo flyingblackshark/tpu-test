@@ -10,7 +10,7 @@ mesh = jax.sharding.Mesh(np.array(jax.devices()).reshape(jax.process_count(), ja
 pspecs = jax.sharding.PartitionSpec('host')
 test = None
 if jax.process_index() == 0:
-    test = jnp.arange(4)
+    test = jnp.ones((4))
 else:
     test = jnp.zeros((4))
 # with mesh:
