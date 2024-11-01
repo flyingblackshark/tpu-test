@@ -10,9 +10,9 @@ mesh = jax.sharding.Mesh(np.array(jax.devices()).reshape(jax.process_count(), ja
 pspecs = jax.sharding.PartitionSpec('host')
 test = None
 if jax.process_index() == 0:
-    test = np.arange(4)
-else:
-    test = np.zeros((4))
+    test = jnp.arange(4)
+# else:
+#     test = jnp.zeros((4))
 # with mesh:
 #     arr = multihost_utils.host_local_array_to_global_array(test, mesh, pspecs)  
 arr = multihost_utils.broadcast_one_to_all(test)
