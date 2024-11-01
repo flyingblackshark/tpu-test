@@ -11,8 +11,8 @@ pspecs = jax.sharding.PartitionSpec('host')
 test = None
 if jax.process_index() == 0:
     test = jnp.arange(4)
-# else:
-#     test = jnp.zeros((4))
+else:
+    test = jnp.zeros((4))
 # with mesh:
 #     arr = multihost_utils.host_local_array_to_global_array(test, mesh, pspecs)  
 arr = multihost_utils.broadcast_one_to_all(test)
