@@ -2,6 +2,7 @@ import jax
 import jax.numpy as jnp
 from jax.sharding import Mesh, PartitionSpec, NamedSharding
 from jax.experimental import mesh_utils
+jax.distributed.initialize()
 # 定义目标数组的形状
 shape = (8,4)
 
