@@ -18,6 +18,7 @@ arr = multihost_utils.host_local_array_to_global_array(test,mesh,pspecs)
 arr = jnp.asarray(arr)
 visualize_array_sharding(arr)
 print(jax.process_index())
-arr = np.asarray(arr)
+
+arr = multihost_utils.process_allgather(arr)
 print(arr is None)
 print(arr)
