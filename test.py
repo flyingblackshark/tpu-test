@@ -6,7 +6,7 @@ from jax.experimental import mesh_utils
 shape = (16,4)
 
 # 定义 sharding 策略（例如在 2 个设备上分配）
-device_mesh = mesh_utils.create_device_mesh((16,))
+device_mesh = mesh_utils.create_device_mesh((8,))
 #mesh = Mesh(devices=jax.devices(), axis_names=('data'))
 x_sharding = NamedSharding(device_mesh,PartitionSpec('data'))
 
